@@ -456,7 +456,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 </div>
 
 <!-- ===== number pad ===== -->
-<div class="scrim" id="padScrim" onclick="closeOnScrim(event,'padScrim')" style="background:transparent"></div>
+<div class="scrim" id="padScrim" onclick="closePad()" style="background:transparent"></div>
 <div class="npwrap" id="numpad">
   <div class="np-head">
     <div class="np-quick" id="npQuick">
@@ -731,56 +731,68 @@ function acceptNotice(){
 }
 
 /* ============================================================ number pad */
-let pad={mode:'price',buf:'',active:false};
+// buf = 顯示字串（單一來源，可為空白）；fresh = 打開後尚未編輯（按第一個數字會重新開始）
+let pad={mode:'price',buf:'',fresh:true,active:false};
 function openPad(mode){
-  pad.mode=mode;pad.buf='';pad.active=true;
+  pad.mode=mode;pad.active=true;pad.fresh=true;
+  pad.buf = mode==='price' ? fmt(state.order.price) : String(state.order.qty);
   document.getElementById('numpad').classList.add('on');
   document.getElementById('padScrim').classList.add('on');
   document.getElementById('npQuick').style.display = mode==='price'?'grid':'none';
   document.getElementById('padUnit').textContent = mode==='price'?'元':'股';
   document.getElementById('padDot').textContent = mode==='price'?'.':'00';
-  document.getElementById('padDot').dataset.k = mode==='price'?'dot':'00';
   padRender();
 }
 function closePad(){pad.active=false;document.getElementById('numpad').classList.remove('on');document.getElementById('padScrim').classList.remove('on');}
-function padCurrent(){
-  if(pad.buf!=='')return pad.buf;
-  return pad.mode==='price'?fmt(state.order.price):String(state.order.qty);
+function padRender(){
+  var el=document.getElementById('padDisp');
+  el.textContent = pad.buf;                       // 完全顯示使用者輸入；空字串就是空白
+  el.style.color = pad.buf==='' ? '#c0c4cc' : '#111';
 }
-function padRender(){document.getElementById('padDisp').textContent=padCurrent();}
 function padKey(k){
   if(k==='ok'){padCommit();return;}
-  if(k==='clear'){pad.buf='';padRender();return;}
-  if(k==='back'){pad.buf=padCurrent().slice(0,-1);padRender();return;}
-  if(k==='dot'){k=document.getElementById('padDot').dataset.k;}
-  let cur=pad.buf;
-  if(k==='dot'){if(pad.mode!=='price')return;if(cur.includes('.'))return;if(cur==='')cur='0';cur+='.';}
-  else if(k==='00'){if(pad.mode!=='qty')return;cur=(cur===''?'':cur)+'00';}
-  else{ // digit
-    if(pad.mode==='price'){const dot=cur.indexOf('.');if(dot>=0&&cur.length-dot>2)return;}
-    cur+=k;
+  if(k==='clear'){pad.buf='';pad.fresh=false;padRender();return;}          // 清除 → 空白
+  if(k==='back'){pad.fresh=false;pad.buf=pad.buf.slice(0,-1);padRender();return;} // 倒退 → 可刪到空白
+  // 「.」鍵在價格模式是小數點、在數量模式是「00」
+  if(k==='dot') k = (pad.mode==='price') ? 'dot' : '00';
+  if(pad.fresh){pad.buf='';pad.fresh=false;}      // 打開後第一次按鍵，重新輸入
+  let cur=pad.buf, next=cur;
+  if(k==='dot'){
+    if(pad.mode==='price' && !cur.includes('.')) next = (cur===''?'0':cur)+'.'; // 直接按 → 0.
+  }else if(k==='00'){
+    if(pad.mode==='qty' && cur!=='') next = cur+'00';   // 不可用 00 開頭
+  }else{ // 0-9
+    let c = (cur==='0') ? '' : cur;                      // 去除前導 0
+    let ok = true;
+    if(pad.mode==='price'){const dot=c.indexOf('.');if(dot>=0 && c.length-dot>2)ok=false;} // 最多兩位小數
+    if(ok) next = c + k;
   }
-  if(cur.replace('.','').length>6)return;
-  pad.buf=cur;padRender();
+  if(next.replace('.','').length<=7) pad.buf=next;       // 長度上限
+  padRender();                                            // 一律刷新，畫面不會殘留
 }
+function padNumOr(fallback){var v=parseFloat(pad.buf);return isNaN(v)?fallback:v;}
 function padStep(d){
-  if(pad.mode==='price'){let p=parseFloat(padCurrent())||state.order.price;p=clampPrice(p+d*tick(p));pad.buf=fmt(p);}
-  else{let q=parseInt(padCurrent())||state.order.qty;q=Math.min(999,Math.max(1,q+d));pad.buf=String(q);}
-  padRender();
+  if(pad.mode==='price'){let p=padNumOr(state.order.price);p=clampPrice(p+d*tick(p));pad.buf=fmt(p);}
+  else{let q=Math.round(padNumOr(state.order.qty));q=Math.min(999,Math.max(1,q+d));pad.buf=String(q);}
+  pad.fresh=false;padRender();
 }
 function padQuick(k){
   if(pad.mode!=='price')return;
   let p = k==='down'?limitDown():k==='up'?limitUp():STOCK.ref;
-  pad.buf=fmt(p);padRender();
+  pad.buf=fmt(p);pad.fresh=false;padRender();
 }
 function padCommit(){
   if(pad.mode==='price'){
-    let p=parseFloat(padCurrent());
-    if(isNaN(p)||p<=0){toast('請輸入有效價格');return;}
-    p=clampPrice(p);state.order.price=p;
+    let p=parseFloat(pad.buf);
+    if(isNaN(p)||p<=0){toast('請輸入價格');return;}           // 空白/無效 → 提示，不關閉
+    let cp=clampPrice(p);
+    if(p>limitUp()+1e-9) toast('超過漲停，已改為漲停價 '+fmt(cp)+' 元');
+    else if(p<limitDown()-1e-9) toast('低於跌停，已改為跌停價 '+fmt(cp)+' 元');
+    else if(Math.abs(cp-p)>1e-9) toast('已對齊跳動單位，'+fmt(cp)+' 元');
+    state.order.price=cp;
   }else{
-    let q=parseInt(padCurrent());
-    if(isNaN(q)||q<1){toast('請輸入至少 1 股');return;}
+    let q=parseInt(pad.buf,10);
+    if(isNaN(q)||q<1){toast('請輸入股數（至少 1 股）');return;}
     if(q>999){q=999;toast('零股單筆上限 999 股');}
     state.order.qty=q;
   }
