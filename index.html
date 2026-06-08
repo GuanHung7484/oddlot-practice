@@ -773,13 +773,18 @@ function padKey(k){
 function padNumOr(fallback){var v=parseFloat(pad.buf);return isNaN(v)?fallback:v;}
 function padStep(d){
   if(pad.mode==='price'){
-    let p=parseFloat(pad.buf);                    // 從當前鍵盤輸入取值
-    if(isNaN(p)) p=state.order.price;             // 空白時用現行價格作為基準
+    let p=parseFloat(pad.buf);
+    if(isNaN(p)){
+      if(pad.buf==='') return;                     // 空白狀態時不再動（已清空）
+      p=state.order.price;                         // 未編輯過時用現行價
+    }
     p=p+d*tick(p);
-    if(p>0.01) pad.buf=fmt(Math.round(p*1e6)/1e6);
+    // 減到跌停以下時清空；否則正常顯示
+    if(p<limitDown()-0.01) pad.buf='';
+    else pad.buf=fmt(Math.round(p*1e6)/1e6);
   }else{
-    let q=parseInt(pad.buf,10);                   // 從當前鍵盤輸入取值
-    if(isNaN(q)) q=0;                             // 空白時當作 0（不是用舊的 state.order.qty）
+    let q=parseInt(pad.buf,10);
+    if(isNaN(q)) q=0;
     q=Math.min(999,Math.max(0,q+d));
     pad.buf=q===0?'':String(q);
   }
