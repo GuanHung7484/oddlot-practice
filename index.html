@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="零股模擬下單">
+<meta name="theme-color" content="#000000">
+<meta name="format-detection" content="telephone=no">
+<title>盤中零股 模擬下單練習</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{
+  --bg:#0a0c11; --panel:#11141b; --panel2:#161a22; --panel3:#1b2029;
+  --line:#232a36; --line2:#2c3543;
+  --text:#e9ecf1; --muted:#8a93a3; --muted2:#5f6776;
+  --up:#ff463a;          /* 漲/紅 */
+  --down:#13c07a;        /* 跌/綠 */
+  --flat:#4f8ef7;        /* 平盤/藍 */
+  --buy:#ee3f2d;         /* 買進 紅 */
+  --sell:#13b079;        /* 賣出 綠 */
+  --tab:#19c2da;         /* 分頁高亮 青 */
+  --gold:#f5c518;
+  --warn:#ffb020;
+  --purple:#5b53d6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;background:#000;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei","Helvetica Neue",Roboto,"Noto Sans TC",sans-serif;
+  color:var(--text);overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+.no-sel{-webkit-user-select:none;user-select:none;}
+
+/* ===== phone frame ===== */
+#app{
+  position:relative;max-width:460px;margin:0 auto;height:100dvh;height:100vh;
+  background:var(--bg);display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 0 40px rgba(0,0,0,.6);
+}
+
+/* ===== sim banner ===== */
+.simbar{
+  flex:0 0 auto;background:linear-gradient(90deg,#3a2a00,#4a3500);
+  color:#ffcf66;font-size:11.5px;font-weight:700;text-align:center;
+  padding:5px 8px;letter-spacing:.3px;border-bottom:1px solid #5a4100;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.simbar .dot{width:6px;height:6px;border-radius:50%;background:#ffcf66;animation:blink 1.6s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ===== header ===== */
+.hdr{flex:0 0 auto;background:#000;}
+.hdr-top{display:flex;align-items:center;height:46px;padding:0 6px;}
+.hdr-top .back,.hdr-top .ic{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#e9ecf1;}
+.hdr-top .title{flex:1;text-align:center;font-size:18px;font-weight:700;letter-spacing:1px;}
+.hdr-top .ic.help{font-size:18px;}
+.tabs{display:flex;background:#000;border-bottom:1px solid #161a22;}
+.tabs .tab{flex:1;text-align:center;padding:11px 0 10px;font-size:16px;color:#aeb6c2;position:relative;font-weight:600;}
+.tabs .tab.on{color:var(--tab);}
+.tabs .tab.on::after{content:"";position:absolute;left:22%;right:22%;bottom:-1px;height:3px;border-radius:3px;background:var(--tab);}
+
+/* ===== account row ===== */
+.acct{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--panel);border-bottom:1px solid var(--line);}
+.acct .sel{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:#0d1016;border:1px solid var(--line2);border-radius:9px;height:38px;font-size:15px;color:#d7dce4;font-weight:600;}
+.acct .sel .cv{font-size:11px;color:var(--muted);}
+.acct .trial{display:flex;flex-direction:column;align-items:flex-end;font-size:11px;color:var(--muted);min-width:96px;}
+.acct .trial b{font-size:17px;color:var(--down);font-weight:700;margin-top:1px;}
+
+/* ===== quote head ===== */
+.qhead{display:flex;align-items:center;gap:10px;padding:8px 12px 10px;background:var(--panel);border-bottom:1px solid var(--line);}
+.tg{display:flex;background:#0d1016;border:1px solid var(--line2);border-radius:9px;overflow:hidden;}
+.tg button{padding:7px 11px;font-size:14px;color:var(--muted);font-weight:700;}
+.tg button.on{background:#2b3340;color:#fff;}
+.code-wrap{flex:1;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line2);padding-bottom:3px;}
+.code-wrap input{flex:1;min-width:0;background:transparent;border:none;color:#fff;font-size:26px;font-weight:700;letter-spacing:2px;outline:none;width:100%;}
+.code-wrap .mag{color:var(--muted);font-size:18px;}
+.qprice{display:flex;flex-direction:column;align-items:flex-end;min-width:120px;}
+.qprice .big{font-size:30px;font-weight:800;line-height:1;}
+.qprice .chg{font-size:14px;font-weight:700;margin-top:3px;}
+
+.namerow{display:flex;align-items:center;gap:8px;padding:2px 12px 9px;background:var(--panel);}
+.badge{background:var(--purple);color:#fff;font-size:13px;font-weight:800;border-radius:5px;padding:2px 5px;}
+.nm{font-size:27px;font-weight:800;color:var(--up);letter-spacing:2px;}
+.nm-info{margin-left:auto;text-align:right;font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* ===== scroll body ===== */
+.body{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.view{display:none;}
+.view.on{display:block;}
+
+/* ===== depth (5 levels) ===== */
+.depth{background:var(--panel);}
+.depth .drow{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;align-items:center;height:38px;border-bottom:1px solid #10131a;}
+.depth .c{position:relative;height:100%;display:flex;align-items:center;overflow:hidden;font-size:16px;font-weight:700;}
+.depth .qb{justify-content:flex-start;padding-left:12px;color:#aeb6c2;}
+.depth .qa{justify-content:flex-end;padding-right:12px;color:#aeb6c2;}
+.depth .pb{justify-content:flex-end;padding-right:14px;}
+.depth .pa{justify-content:flex-start;padding-left:14px;}
+.depth .bar{position:absolute;top:5px;bottom:5px;border-radius:3px;opacity:.32;}
+.depth .qb .bar{right:0;background:var(--up);}
+.depth .qa .bar{left:0;background:var(--down);}
+.depth .pb,.depth .pa{cursor:pointer;}
+.depth .pb:active,.depth .pa:active{background:#1c2531;}
+.u{color:var(--up);} .d{color:var(--down);} .f{color:#c7cdd6;}
+.mid-caret{text-align:center;color:var(--muted2);font-size:13px;padding:2px 0;background:var(--panel);}
+
+/* ===== last trades ===== */
+.trades{background:var(--panel);padding:2px 0 6px;}
+.trades .tr{display:grid;grid-template-columns:84px 1fr 1fr 1fr 70px;align-items:center;height:30px;font-size:15px;font-weight:600;padding:0 12px;}
+.trades .tr .tm{color:#aeb6c2;font-size:14px;}
+.trades .tr .q{text-align:right;}
+
+/* ===== order panel ===== */
+.opanel{flex:0 0 auto;background:var(--bg);padding:8px 12px 4px;border-top:1px solid var(--line);}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:9px;}
+.pbtn{height:46px;border-radius:10px;font-size:17px;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;}
+.pbtn.fall{background:var(--down);} .pbtn.flat{background:var(--flat);} .pbtn.rise{background:var(--up);}
+.pbtn:active{filter:brightness(.9);}
+
+.field{display:flex;align-items:stretch;border:1px solid var(--line2);border-radius:12px;overflow:hidden;height:54px;background:#0d1016;}
+.field .step{width:54px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#cfd5de;background:#0d1016;}
+.field .step:active{background:#222b37;}
+.field .val{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;}
+.field .val small{font-size:11px;color:var(--muted);font-weight:600;margin-top:1px;}
+.left{display:flex;flex-direction:column;justify-content:center;}
+.subrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;margin-bottom:10px;}
+.kindpill{height:54px;border:1px solid var(--line2);border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:700;color:#d7dce4;background:#0d1016;}
+.unit{font-size:11px;color:var(--muted);text-align:right;margin-top:-4px;}
+
+.hint{font-size:12px;color:var(--warn);background:rgba(255,176,32,.08);border:1px solid rgba(255,176,32,.25);border-radius:9px;padding:7px 10px;margin:2px 0 10px;line-height:1.5;display:flex;gap:6px;}
+.hint b{color:#ffd27a;}
+
+/* ===== bottom buy/sell ===== */
+.actionbar{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:0;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--bg);}
+.actionbar .big{height:60px;border-radius:12px;font-size:25px;font-weight:900;color:#fff;letter-spacing:6px;margin:0 4px;}
+.actionbar .buy{background:var(--buy);} .actionbar .sell{background:var(--sell);}
+.actionbar .big:active{filter:brightness(.9);}
+
+/* ===== orders (委託) ===== */
+.ord-filter{display:flex;gap:8px;padding:9px 10px;background:var(--panel);border-bottom:1px solid var(--line);align-items:center;}
+.ord-filter .sel{flex:1;justify-content:center;}
+.ord-filter .refresh{width:40px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#cfd5de;}
+.ord-head{display:grid;grid-template-columns:64px 1.3fr 1.1fr 0.9fr;background:#0d1016;color:#aeb6c2;font-size:14px;font-weight:700;padding:9px 8px;border-bottom:1px solid var(--line);}
+.ord-head>div:nth-child(3){text-align:center;} .ord-head>div:nth-child(4){text-align:right;padding-right:6px;}
+.ord-item{display:grid;grid-template-columns:64px 1.3fr 1.1fr 0.9fr;align-items:center;border-bottom:1px solid var(--line);padding:10px 8px;position:relative;}
+.ord-item .tagcol{display:flex;flex-direction:column;align-items:flex-start;gap:5px;}
+.ord-item .pre{background:var(--warn);color:#3a2a00;font-size:11px;font-weight:800;border-radius:3px;padding:1px 3px;}
+.ord-item .chg{background:#2b6fe0;color:#fff;font-size:13px;font-weight:800;border-radius:7px;padding:5px 9px;}
+.ord-item .chg.done{background:#39414e;color:#9aa3b1;}
+.ord-item .nm2{font-size:17px;font-weight:800;color:#e9ecf1;}
+.ord-item .sub{font-size:14px;font-weight:700;margin-top:3px;}
+.ord-item .mid{text-align:center;}
+.ord-item .mid .p1{font-size:17px;font-weight:800;}
+.ord-item .mid .p2{font-size:13px;color:var(--muted);margin-top:3px;}
+.ord-item .qty{text-align:right;padding-right:2px;font-size:15px;font-weight:800;line-height:1.7;display:flex;flex-direction:column;align-items:flex-end;}
+.ord-item .qty .rem{color:#e9ecf1;} .ord-item .qty .fill{color:var(--down);}
+.ord-item .qty .cv{color:var(--muted2);font-size:13px;margin-top:1px;}
+.ord-status{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;}
+.st-work{background:rgba(79,142,247,.15);color:#7ab0ff;}
+.st-part{background:rgba(245,197,24,.16);color:#f5c518;}
+.st-full{background:rgba(19,176,122,.16);color:#36d18f;}
+.st-cancel{background:rgba(150,160,175,.16);color:#9aa3b1;}
+.empty{padding:50px 20px;text-align:center;color:var(--muted);font-size:15px;line-height:2;}
+.ord-foot{text-align:center;color:var(--muted2);font-size:13px;padding:16px;}
+
+/* ===== holdings / 明細 ===== */
+.sumcard{margin:10px;background:linear-gradient(135deg,#161b24,#10141b);border:1px solid var(--line);border-radius:14px;padding:14px;}
+.sumcard .t{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.sumcard .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.sumcard .cell .k{font-size:12px;color:var(--muted);} .sumcard .cell .v{font-size:22px;font-weight:800;margin-top:2px;}
+.fill-item{display:grid;grid-template-columns:84px 60px 1fr 1fr;align-items:center;padding:11px 12px;border-bottom:1px solid var(--line);font-size:15px;}
+.fill-item .side{font-weight:800;} .fill-item .pr{text-align:right;font-weight:700;} .fill-item .amt{text-align:right;color:var(--muted);}
+
+/* ===== overlays ===== */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:40;}
+.scrim.on{display:block;}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;background:#f4f5f7;color:#1c2430;border-radius:14px 14px 0 0;transform:translateY(100%);transition:transform .22s ease;z-index:50;}
+.scrim.on .sheet{transform:translateY(0);}
+.sheet-ios{position:absolute;left:8px;right:8px;bottom:8px;max-width:444px;margin:0 auto;}
+.ios-list{background:#fff;border-radius:14px;overflow:hidden;}
+.ios-list .it{padding:15px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e6e8ec;}
+.ios-list .it:active{background:#eef0f3;}
+.ios-list .it .l{color:#1565ff;font-size:18px;font-weight:700;}
+.ios-list .it .r{color:#8a93a3;font-size:14px;}
+.ios-list .it.dis .l{color:#b6bcc6;} .ios-list .it.dis .r{color:#c2c8d0;}
+.ios-cancel{margin-top:8px;background:#fff;border-radius:14px;text-align:center;padding:16px;color:#1565ff;font-size:18px;font-weight:800;}
+
+/* notice modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:60;padding:18px;}
+.modal.on{display:flex;}
+.mcard{width:100%;max-width:400px;background:#fff;color:#222;border-radius:14px;overflow:hidden;max-height:86vh;display:flex;flex-direction:column;}
+.mcard .mh{background:#1f8fff;color:#fff;font-size:19px;font-weight:800;text-align:center;padding:13px;position:relative;}
+.mcard .mh .x{position:absolute;right:10px;top:9px;font-size:22px;color:#fff;width:34px;height:34px;}
+.mcard .mb{padding:14px 16px;overflow-y:auto;font-size:14.5px;line-height:1.85;color:#2a2f37;}
+.mcard .mb p{margin:0 0 9px;} .mcard .mb .red{color:#e2342a;font-weight:700;}
+.chkrow{display:flex;align-items:center;gap:9px;padding:13px 16px;border-top:1px solid #eee;font-size:15px;font-weight:700;color:#222;}
+.chk{width:24px;height:24px;border:2px solid #bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;}
+.chk.on{background:#1f8fff;border-color:#1f8fff;}
+.mfoot{padding:0 16px 16px;}
+.mbtn{width:100%;height:50px;border-radius:11px;background:#1f8fff;color:#fff;font-size:18px;font-weight:800;}
+.mbtn:disabled{background:#b9c2cd;}
+
+/* confirm dialog */
+.cfm{width:100%;max-width:360px;background:#fff;color:#1c2430;border-radius:16px;overflow:hidden;}
+.cfm .ch{color:#fff;font-size:20px;font-weight:800;text-align:center;padding:13px;position:relative;}
+.cfm .ch.buy{background:var(--up);} .cfm .ch.sell{background:var(--down);}
+.cfm .ch .x{position:absolute;right:8px;top:9px;font-size:22px;width:34px;height:34px;color:#fff;}
+.cfm .cb{padding:18px 18px 6px;position:relative;min-height:150px;}
+.cfm .cb .ln{font-size:18px;font-weight:700;margin-bottom:8px;color:#23262b;}
+.cfm .cb .ln.small{font-size:15px;color:#6a7280;font-weight:600;margin-bottom:6px;}
+.cfm .wm{position:absolute;right:16px;top:8px;font-size:74px;font-weight:900;line-height:1;}
+.cfm .wm.buy{color:var(--up);} .cfm .wm.sell{color:var(--down);}
+.cfm .cbtns{display:grid;grid-template-columns:1fr 1.2fr;gap:12px;padding:10px 18px 18px;}
+.cfm .cbtns .c{height:52px;border-radius:11px;font-size:19px;font-weight:800;}
+.cfm .cbtns .cancel{background:#e9ebee;color:#3a3f46;}
+.cfm .cbtns .ok{color:#fff;} .cfm .cbtns .ok.buy{background:var(--up);} .cfm .cbtns .ok.sell{background:var(--down);}
+.cfm .cf-note{font-size:11px;color:#9098a4;text-align:center;padding:0 18px 14px;margin-top:-6px;}
+
+/* numpad */
+.npwrap{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;z-index:55;transform:translateY(110%);transition:transform .2s ease;}
+.npwrap.on{transform:translateY(0);}
+.np-head{background:#fff;border-top:1px solid #d9dce1;padding:8px 10px 6px;}
+.np-quick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.np-quick button{height:46px;border-radius:9px;color:#fff;font-size:17px;font-weight:800;}
+.np-quick .qf{background:var(--down);} .np-quick .qp{background:var(--flat);} .np-quick .qr{background:var(--up);}
+.np-disp{display:flex;align-items:center;border:1px solid #d4d8de;border-radius:10px;height:50px;overflow:hidden;background:#fff;}
+.np-disp .s{width:54px;text-align:center;font-size:28px;color:#444;}
+.np-disp .s:active{background:#eef0f3;}
+.np-disp .v{flex:1;text-align:center;font-size:26px;font-weight:800;color:#111;}
+.np-disp .x{width:42px;text-align:center;color:#8a93a3;font-size:20px;}
+.np-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:#c9ced6;gap:1px;}
+.np-grid button{background:#fff;height:58px;font-size:24px;font-weight:700;color:#1c2430;display:flex;align-items:center;justify-content:center;}
+.np-grid button:active{background:#e6e9ee;}
+.np-grid .ok{grid-row:span 3;background:#fff;color:#1f8fff;font-size:22px;font-weight:800;}
+.np-grid .muted{color:#5f6776;font-size:20px;}
+
+/* help */
+.help-card{width:100%;max-width:420px;background:#fff;color:#1c2430;border-radius:16px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
+.help-card .hh{background:#11141b;color:#fff;padding:14px 16px;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:space-between;}
+.help-card .hh .x{font-size:22px;width:34px;height:34px;color:#fff;}
+.help-card .hb{padding:6px 18px 18px;overflow-y:auto;}
+.help-card h4{color:#11141b;font-size:16px;margin:16px 0 6px;display:flex;align-items:center;gap:7px;}
+.help-card h4 .n{background:#1f8fff;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+.help-card p{margin:0 0 8px;font-size:14.5px;line-height:1.75;color:#3a4049;}
+.help-card .tagk{display:inline-block;background:#eef2f7;color:#1c2430;border-radius:6px;padding:1px 7px;font-weight:700;font-size:13px;margin:0 1px;}
+.help-card .reset{margin-top:18px;width:100%;height:46px;border-radius:11px;background:#fbe9e7;color:#d2362a;font-weight:800;font-size:16px;}
+.help-card .kk{color:var(--up);font-weight:800;} .help-card .gg{color:var(--down);font-weight:800;}
+
+/* toast */
+.toast{position:fixed;left:50%;top:64px;transform:translateX(-50%) translateY(-12px);background:rgba(20,24,32,.96);color:#fff;border:1px solid #2b3340;padding:10px 16px;border-radius:11px;font-size:14px;font-weight:700;z-index:90;opacity:0;transition:.25s;max-width:88%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .em{color:var(--gold);}
+
+/* bottom tabbar (app-like) */
+.tabbar{flex:0 0 auto;display:none;}
+</style>
+</head>
+<body>
+<div id="app" data-view="order">
+
+  <div class="simbar no-sel"><span class="dot"></span>模擬練習　非真實下單　不涉及真實金錢　學會操作再用真的帳戶</div>
+
+  <!-- header -->
+  <div class="hdr no-sel">
+    <div class="hdr-top">
+      <button class="back" onclick="goBack()">‹</button>
+      <div class="title">盤中零股</div>
+      <button class="ic help" onclick="openHelp()">?</button>
+    </div>
+    <div class="tabs">
+      <button class="tab" data-tab="quote" onclick="switchTab('quote')">報價</button>
+      <button class="tab on" data-tab="order" onclick="switchTab('order')">下單</button>
+      <button class="tab" data-tab="orders" onclick="switchTab('orders')">委託</button>
+      <button class="tab" data-tab="detail" onclick="switchTab('detail')">明細</button>
+    </div>
+  </div>
+
+  <!-- account row -->
+  <div class="acct no-sel" id="acctRow">
+    <button class="sel" onclick="toast('模擬帳戶：練習分公司 8888-0000000')">
+      <span>8888-0000000</span><span class="cv">▼</span>
+    </button>
+    <div class="trial">試撮價<b id="trialPx">91.10</b></div>
+  </div>
+
+  <!-- quote head -->
+  <div class="qhead no-sel">
+    <div class="tg">
+      <button onclick="toast('整股＝1張＝1000股。本練習聚焦「零股」，可1股起買。')">整</button>
+      <button class="on">零</button>
+    </div>
+    <div class="code-wrap">
+      <input id="codeInput" value="3149" inputmode="numeric" readonly onclick="toast('本練習以「正達 3149」示範，免輸入。')">
+      <span class="mag">⌕</span>
+    </div>
+    <div class="qprice">
+      <div class="big" id="qBig">91.10</div>
+      <div class="chg" id="qChg">▲0.10 (0.11%)</div>
+    </div>
+  </div>
+  <div class="namerow no-sel">
+    <span class="badge">市</span><span class="nm">正達</span>
+    <div class="nm-info">參考 91.00　漲停 100.00<br>跌停 81.90　單位 1 股</div>
+  </div>
+
+  <!-- scroll body -->
+  <div class="body">
+
+    <!-- ========== 下單 view ========== -->
+    <div class="view on" data-view="order">
+      <div class="depth no-sel" id="depthBox"></div>
+      <div class="mid-caret">︿</div>
+      <div class="trades" id="tradeBox"></div>
+    </div>
+
+    <!-- ========== 報價 view ========== -->
+    <div class="view" data-view="quote">
+      <div class="depth no-sel" id="depthBox2"></div>
+      <div class="mid-caret">最近成交</div>
+      <div class="trades" id="tradeBox2"></div>
+      <div class="hint" style="margin:12px">
+        <span>📈</span>
+        <span>這是「報價」頁，看盤用。左邊紅色是想<b style="color:var(--up)">買</b>的人（買價/委買量），右邊綠色是想<b style="color:var(--down)">賣</b>的人（賣價/委賣量）。價格高於參考價顯示紅色、低於顯示綠色。</span>
+      </div>
+    </div>
+
+    <!-- ========== 委託 view ========== -->
+    <div class="view" data-view="orders">
+      <div class="ord-filter no-sel">
+        <button class="sel" onclick="toast('模擬帳戶：證 8888-0000000')"><span>證 8888-0000000</span><span class="cv">▼</span></button>
+        <button class="sel" style="flex:.7" onclick="toast('顯示全部委託')"><span>全部</span><span class="cv">▼</span></button>
+        <button class="refresh" onclick="renderOrders();toast('已更新')">⟳</button>
+      </div>
+      <div class="ord-head no-sel"><div>刪/改</div><div>名稱</div><div>委價/成均</div><div>數量</div></div>
+      <div id="ordersList"></div>
+      <div class="ord-foot">＊僅提供盤中零股的委託資訊（模擬）＊</div>
+    </div>
+
+    <!-- ========== 明細 view ========== -->
+    <div class="view" data-view="detail">
+      <div class="sumcard">
+        <div class="t">我的模擬部位（正達 3149・零股）</div>
+        <div class="grid">
+          <div class="cell"><div class="k">持有股數</div><div class="v" id="hShares">0 股</div></div>
+          <div class="cell"><div class="k">平均成本</div><div class="v" id="hCost">—</div></div>
+          <div class="cell"><div class="k">參考市值</div><div class="v" id="hValue">0 元</div></div>
+          <div class="cell"><div class="k">未實現損益</div><div class="v" id="hPnl">0 元</div></div>
+        </div>
+      </div>
+      <div class="ord-head no-sel" style="grid-template-columns:84px 60px 1fr 1fr"><div>時間</div><div>買賣</div><div>成交價</div><div>金額</div></div>
+      <div id="fillsList"></div>
+      <div class="ord-foot" id="fillsFoot">尚無成交明細</div>
+    </div>
+
+  </div>
+
+  <!-- pinned order controls (order view only) -->
+  <div class="opanel no-sel" id="opanel">
+    <div class="hint"><span>💡</span><span id="orderHint">先選好<b>價格</b>與<b>數量</b>，再按下方<b style="color:var(--up)">買進</b>或<b style="color:var(--down)">賣出</b>。可直接點上方五檔的價格帶入。</span></div>
+    <div class="row3">
+      <button class="pbtn fall" onclick="setLimit('down')">跌停</button>
+      <button class="pbtn flat" onclick="setLimit('flat')">平盤</button>
+      <button class="pbtn rise" onclick="setLimit('up')">漲停</button>
+    </div>
+    <div class="subrow">
+      <div class="left">
+        <div class="field">
+          <button class="step" onclick="bumpPrice(-1)">−</button>
+          <button class="val" onclick="openPad('price')"><span id="priceVal">91.10</span><small id="amtVal">約 91 元</small></button>
+          <button class="step" onclick="bumpPrice(1)">＋</button>
+        </div>
+      </div>
+      <div class="left">
+        <div class="field">
+          <button class="step" onclick="bumpQty(-1)">−</button>
+          <button class="val" onclick="openPad('qty')"><span id="qtyVal">1</span><small>單位：1 股</small></button>
+          <button class="step" onclick="bumpQty(1)">＋</button>
+        </div>
+      </div>
+    </div>
+    <div class="subrow" style="margin-bottom:2px">
+      <button class="kindpill" onclick="openTypeSheet()">盤中零股 <span style="color:var(--muted);font-size:13px">▾</span></button>
+      <button class="kindpill" onclick="toast('限價＝你指定的價格。系統會以此價或更好的價格成交。')">限價 ROD <span style="color:var(--muted);font-size:13px">▾</span></button>
+    </div>
+  </div>
+
+  <!-- bottom buy/sell bar (only on order view) -->
+  <div class="actionbar no-sel" id="actionBar">
+    <button class="big buy" onclick="confirmOrder('buy')">買進</button>
+    <button class="big sell" onclick="confirmOrder('sell')">賣出</button>
+  </div>
+
+</div>
+
+<!-- ===== trade type action sheet ===== -->
+<div class="scrim" id="typeScrim" onclick="closeOnScrim(event,'typeScrim')">
+  <div class="sheet sheet-ios">
+    <div style="text-align:center;color:#8a93a3;font-size:13px;padding:10px">請選擇交易型態</div>
+    <div class="ios-list">
+      <div class="it dis"><span class="l">整股 ROD</span><span class="r">當日有效</span></div>
+      <div class="it dis"><span class="l">整股 IOC</span><span class="r">立即成交否則取消</span></div>
+      <div class="it dis"><span class="l">整股 FOK</span><span class="r">全部成交否則取消</span></div>
+      <div class="it dis"><span class="l">盤後定價</span><span class="r">13:30 後</span></div>
+      <div class="it dis"><span class="l">盤後零股</span><span class="r">13:40–14:30</span></div>
+      <div class="it" onclick="pickType()"><span class="l" style="color:#1f8fff;font-weight:800">盤中零股 ✓</span><span class="r" style="color:#1f8fff">本練習</span></div>
+      <div class="it dis"><span class="l">條件單</span><span class="r">觸價下單</span></div>
+    </div>
+    <div class="ios-cancel" onclick="closeSheet('typeScrim')">取消</div>
+  </div>
+</div>
+
+<!-- ===== notice modal ===== -->
+<div class="modal" id="noticeModal">
+  <div class="mcard">
+    <div class="mh">注意事項 <button class="x" onclick="closeNotice()">✕</button></div>
+    <div class="mb">
+      <p><b>一、</b>盤中零股交易時間：交易日上午 9:00 至下午 1:30 止，未成交之委託不保留至盤後零股時段。</p>
+      <p><b>二、</b>預約單時間：交易日下午 2:50 至次一交易日上午 9:00。</p>
+      <p><b>三、</b>競價方式：上午 9:10 進行第一次撮合，之後約每 1 分鐘以集合競價撮合，依價格優先、同價格時間優先成交。</p>
+      <p><b>四、</b>交易標的：股票、TDR、ETF、受益證券、受益憑證。</p>
+      <p><b>五、</b>交易限制：不可當沖，亦不得為信用交易及借券賣出。</p>
+      <p class="red">＊提醒：當日買進之盤中零股，不可於同日以整股賣出。</p>
+      <p><b>六、</b>委託種類：僅得以「限價 ROD」進行委託。</p>
+      <p><b>七、</b>手續費：以成交金額 1.425‰ 計算（電子下單常有折扣），每筆不足新台幣 1 元以 1 元計收。</p>
+      <p class="red" style="margin-top:10px">★ 本系統為「模擬練習」，以上為衛教說明，所有委託與成交皆為虛擬，不會送至交易所、不涉及真實金錢。</p>
+    </div>
+    <div class="chkrow" onclick="toggleChk()">
+      <span class="chk" id="noticeChk"></span><span>我已完整閱讀注意事項</span>
+    </div>
+    <div class="mfoot"><button class="mbtn" id="noticeOk" disabled onclick="acceptNotice()">確定</button></div>
+  </div>
+</div>
+
+<!-- ===== confirm dialog ===== -->
+<div class="modal" id="confirmModal">
+  <div class="cfm">
+    <div class="ch" id="cfmHead">委託確認 <button class="x" onclick="closeModal('confirmModal')">✕</button></div>
+    <div class="cb">
+      <div class="wm" id="cfmWm">買</div>
+      <div class="ln">練習分公司</div>
+      <div class="ln">8888-0000000</div>
+      <div class="ln">正達 (3149)</div>
+      <div class="ln" id="cfmAction">盤中零股買進</div>
+      <div class="ln" id="cfmPrice">91.10 元</div>
+      <div class="ln" id="cfmQty">1 股</div>
+    </div>
+    <div class="cf-note" id="cfmEst">預估金額 約 91 元（未計手續費）</div>
+    <div class="cbtns">
+      <button class="c cancel" onclick="closeModal('confirmModal')">取消</button>
+      <button class="c ok buy" id="cfmOk" onclick="submitOrder()">確認送出</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== number pad ===== -->
+<div class="scrim" id="padScrim" onclick="closeOnScrim(event,'padScrim')" style="background:transparent"></div>
+<div class="npwrap" id="numpad">
+  <div class="np-head">
+    <div class="np-quick" id="npQuick">
+      <button class="qf" onclick="padQuick('down')">跌停</button>
+      <button class="qp" onclick="padQuick('flat')">平盤</button>
+      <button class="qr" onclick="padQuick('up')">漲停</button>
+    </div>
+    <div class="np-disp">
+      <button class="s" onclick="padStep(-1)">−</button>
+      <div class="v" id="padDisp">91.10</div>
+      <button class="s" onclick="padStep(1)">＋</button>
+      <div class="x" id="padUnit">元</div>
+    </div>
+  </div>
+  <div class="np-grid">
+    <button onclick="padKey('1')">1</button><button onclick="padKey('2')">2</button><button onclick="padKey('3')">3</button>
+    <button class="muted" onclick="padKey('back')">⌫</button>
+    <button onclick="padKey('4')">4</button><button onclick="padKey('5')">5</button><button onclick="padKey('6')">6</button>
+    <button class="ok" onclick="padKey('ok')">確認</button>
+    <button onclick="padKey('7')">7</button><button onclick="padKey('8')">8</button><button onclick="padKey('9')">9</button>
+    <button class="muted" onclick="padKey('clear')">清除</button><button onclick="padKey('0')">0</button>
+    <button id="padDot" onclick="padKey('dot')">.</button>
+  </div>
+</div>
+
+<!-- ===== help ===== -->
+<div class="modal" id="helpModal">
+  <div class="help-card">
+    <div class="hh">零股下單教學 <button class="x" onclick="closeModal('helpModal')">✕</button></div>
+    <div class="hb">
+      <p style="background:#fff7e6;border:1px solid #ffe1a6;border-radius:10px;padding:10px;color:#8a5a00">這裡是<b>模擬練習</b>，怎麼按都不會真的買賣、不會花到錢。放心多練幾次！</p>
+
+      <h4><span class="n">?</span>什麼是「零股」</h4>
+      <p>股票一張 = 1000 股，常常要好幾萬元。<b>零股</b>可以 <b>1 股</b>起買，幾十、幾百元就能參與，很適合小資金。</p>
+
+      <h4><span class="n">1</span>選交易型態</h4>
+      <p>點畫面中的 <span class="tagk">盤中零股 ▾</span> 會看到清單，選 <span class="tagk">盤中零股</span>（盤中 9:00–13:30 都能下、約每分鐘撮合一次）。</p>
+
+      <h4><span class="n">2</span>設定價格</h4>
+      <p>點 <span class="tagk">價格</span> 欄會跳出數字鍵盤。也可用快捷鍵：<span class="gg">跌停</span>＝今天最低可掛價、<span class="tagk" style="color:#4f8ef7">平盤</span>＝昨收價、<span class="kk">漲停</span>＝今天最高可掛價。想快點成交：買就掛高一點、賣就掛低一點。</p>
+
+      <h4><span class="n">3</span>設定數量</h4>
+      <p>點 <span class="tagk">數量</span> 欄輸入股數，單位是 <b>1 股</b>（不是張）。</p>
+
+      <h4><span class="n">4</span>買進或賣出</h4>
+      <p>確認無誤後按 <span class="kk">買進</span>（紅）或 <span class="gg">賣出</span>（綠），再於跳出的「委託確認」按 <b>確認送出</b>。</p>
+
+      <h4><span class="n">5</span>看委託 / 成交</h4>
+      <p>到 <span class="tagk">委託</span> 頁看狀態：<b>餘</b>＝還沒成交的股數、<b>成</b>＝已成交股數。想取消可按 <span class="tagk" style="color:#fff;background:#2b6fe0">刪改</span>。成交紀錄與部位在 <span class="tagk">明細</span> 頁。</p>
+
+      <h4><span class="n">⚑</span>顏色記法（台股）</h4>
+      <p><span class="kk">紅色＝漲／買進</span>　<span class="gg">綠色＝跌／賣出</span>（和美股相反，別搞混）。</p>
+
+      <button class="reset" onclick="resetSim()">🗑 重設模擬（清空委託與部位）</button>
+      <p style="text-align:center;color:#9098a4;margin-top:12px">本工具與元大證券無任何關係，僅供個人練習。</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   盤中零股 模擬下單  ——  純前端模擬，無真實交易
+   ============================================================ */
+const STORE='yt-oddlot-sim-v1';
+const STOCK={code:'3149',name:'正達',market:'市',ref:91.00};
+
+let state={
+  last:91.10, trial:91.10,
+  bids:[[91.10,185],[91.00,3854],[90.90,381],[90.80,816],[90.70,377]],
+  asks:[[91.30,225],[91.40,286],[91.50,1355],[91.60,300],[91.70,150]],
+  trades:[
+    {t:'13:28:45',p:91.10,q:200},{t:'13:28:50',p:91.10,q:83},
+    {t:'13:29:15',p:91.10,q:10},{t:'13:29:20',p:91.10,q:30},{t:'13:29:40',p:91.10,q:40}
+  ],
+  order:{price:91.10, qty:1, side:'buy'},
+  orders:[], fills:[],
+  holdShares:0, holdCostTotal:0,
+  noticeAccepted:false,
+  tab:'order'
+};
+
+/* ---------- persistence ---------- */
+function save(){
+  try{localStorage.setItem(STORE,JSON.stringify({
+    orders:state.orders,fills:state.fills,holdShares:state.holdShares,
+    holdCostTotal:state.holdCostTotal,noticeAccepted:state.noticeAccepted
+  }));}catch(e){}
+}
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(STORE));if(s){
+    state.orders=s.orders||[];state.fills=s.fills||[];
+    state.holdShares=s.holdShares||0;state.holdCostTotal=s.holdCostTotal||0;
+    state.noticeAccepted=!!s.noticeAccepted;
+  }}catch(e){}
+}
+
+/* ---------- helpers ---------- */
+function tick(p){p=+p;if(p<10)return .01;if(p<50)return .05;if(p<100)return .1;if(p<500)return .5;if(p<1000)return 1;return 5;}
+function roundTick(p){const t=tick(p);return Math.round(p/t)*t;}
+function floorTick(p){const t=tick(p);return Math.floor((p+1e-9)/t)*t;}
+function ceilTick(p){const t=tick(p);return Math.ceil((p-1e-9)/t)*t;}
+function limitUp(){return floorTick(STOCK.ref*1.1);}
+function limitDown(){return ceilTick(STOCK.ref*0.9);}
+function fmt(p){return (+p).toFixed(2);}
+function fmtInt(n){return Math.round(n).toLocaleString('en-US');}
+function clampPrice(p){return Math.min(limitUp(),Math.max(limitDown(),roundTick(p)));}
+function colorOf(p){p=+p;if(p>STOCK.ref+1e-9)return'u';if(p<STOCK.ref-1e-9)return'd';return'f';}
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){const el=document.getElementById('toast');el.innerHTML=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2600);}
+
+/* ============================================================ render */
+function renderQuoteHead(){
+  const chg=state.last-STOCK.ref, pct=chg/STOCK.ref*100;
+  const cls=colorOf(state.last);
+  const big=document.getElementById('qBig');
+  big.textContent=fmt(state.last);big.className='big '+cls;
+  const arrow=chg>0?'▲':chg<0?'▼':'';
+  const chgEl=document.getElementById('qChg');
+  chgEl.textContent=`${arrow}${fmt(Math.abs(chg))} (${Math.abs(pct).toFixed(2)}%)`;
+  chgEl.className='chg '+cls;
+  document.getElementById('trialPx').textContent=fmt(state.trial);
+  document.getElementById('trialPx').className=colorOf(state.trial);
+}
+function depthHTML(){
+  const maxQ=Math.max(...state.bids.map(b=>b[1]),...state.asks.map(a=>a[1]),1);
+  let h='';
+  for(let i=0;i<5;i++){
+    const b=state.bids[i],a=state.asks[i];
+    const bw=b?(b[1]/maxQ*100):0, aw=a?(a[1]/maxQ*100):0;
+    h+=`<div class="drow">
+      <div class="c qb"><div class="bar" style="width:${bw}%"></div>${b?fmtInt(b[1]):''}</div>
+      <div class="c pb ${b?colorOf(b[0]):''}" ${b?`onclick="pickDepthPrice(${b[0]})"`:''}>${b?fmt(b[0]):''}</div>
+      <div class="c pa ${a?colorOf(a[0]):''}" ${a?`onclick="pickDepthPrice(${a[0]})"`:''}>${a?fmt(a[0]):''}</div>
+      <div class="c qa"><div class="bar" style="width:${aw}%"></div>${a?fmtInt(a[1]):''}</div>
+    </div>`;
+  }
+  return h;
+}
+function tradesHTML(){
+  let h='';
+  state.trades.slice(-6).reverse().forEach(tr=>{
+    const cls=colorOf(tr.p);
+    h+=`<div class="tr"><span class="tm">${tr.t}</span>
+      <span class="${cls}">${fmt(tr.p)}</span>
+      <span class="${cls}" style="text-align:center">${tr.p>=state.last?'▲':'▼'}</span>
+      <span class="${cls}">${fmt(tr.p)}</span>
+      <span class="q ${cls}">${fmtInt(tr.q)}</span></div>`;
+  });
+  return h;
+}
+function renderBook(){
+  const dh=depthHTML(),th=tradesHTML();
+  document.getElementById('depthBox').innerHTML=dh;
+  document.getElementById('depthBox2').innerHTML=dh;
+  document.getElementById('tradeBox').innerHTML=th;
+  document.getElementById('tradeBox2').innerHTML=th;
+}
+function renderOrderPanel(){
+  document.getElementById('priceVal').textContent=fmt(state.order.price);
+  document.getElementById('qtyVal').textContent=state.order.qty;
+  document.getElementById('amtVal').textContent='約 '+fmtInt(state.order.price*state.order.qty)+' 元';
+}
+
+const STAT={working:{c:'st-work',t:'委託中'},part:{c:'st-part',t:'部分成交'},full:{c:'st-full',t:'全部成交'},cancel:{c:'st-cancel',t:'已刪除'}};
+function renderOrders(){
+  const box=document.getElementById('ordersList');
+  if(!state.orders.length){box.innerHTML='<div class="empty">目前沒有委託<br><span style="font-size:13px;color:var(--muted2)">到「下單」頁掛一筆零股試試</span></div>';return;}
+  let h='';
+  state.orders.slice().reverse().forEach(o=>{
+    const sideTxt=o.side==='buy'?'盤中零股買':'盤中零股賣';
+    const sideCls=o.side==='buy'?'u':'d';
+    const canCancel=o.status==='working'||o.status==='part';
+    const avg=o.filled>0?fmt(o.avg):'--';
+    const st=STAT[o.status];
+    h+=`<div class="ord-item">
+      <div class="tagcol">
+        <span class="pre">委</span>
+        <button class="chg ${canCancel?'':'done'}" ${canCancel?`onclick="openCancel(${o.id})"`:''}>刪改</button>
+      </div>
+      <div><div class="nm2">正達</div><div class="sub ${sideCls}">${sideTxt}</div></div>
+      <div class="mid"><div class="p1 ${colorOf(o.price)}">${fmt(o.price)}</div><div class="p2">成均 ${avg}</div><div class="ord-status ${st.c}">${st.t}</div></div>
+      <div class="qty"><div class="rem">餘 ${o.remain}</div><div class="fill">成 ${o.filled}</div><div class="cv">⌄</div></div>
+    </div>`;
+  });
+  box.innerHTML=h;
+}
+function renderDetail(){
+  const sh=state.holdShares;
+  document.getElementById('hShares').textContent=fmtInt(sh)+' 股';
+  const avg=sh>0?state.holdCostTotal/sh:0;
+  document.getElementById('hCost').textContent=sh>0?fmt(avg)+' 元':'—';
+  const val=sh*state.last;
+  document.getElementById('hValue').textContent=fmtInt(val)+' 元';
+  const pnl=val-state.holdCostTotal;
+  const pnlEl=document.getElementById('hPnl');
+  pnlEl.textContent=(pnl>=0?'+':'')+fmtInt(pnl)+' 元';
+  pnlEl.className='v '+(pnl>0?'u':pnl<0?'d':'f');
+
+  const box=document.getElementById('fillsList');
+  const foot=document.getElementById('fillsFoot');
+  if(!state.fills.length){box.innerHTML='';foot.style.display='block';foot.textContent='尚無成交明細';return;}
+  foot.style.display='none';let h='';
+  state.fills.slice().reverse().forEach(f=>{
+    const cls=f.side==='buy'?'u':'d';
+    h+=`<div class="fill-item">
+      <span class="tm" style="color:#aeb6c2">${f.t}</span>
+      <span class="side ${cls}">${f.side==='buy'?'買':'賣'}</span>
+      <span class="pr ${cls}">${fmt(f.p)}</span>
+      <span class="amt">${f.q} 股 / ${fmtInt(f.p*f.q)}元</span>
+    </div>`;
+  });
+  box.innerHTML=h;
+}
+function renderAll(){renderQuoteHead();renderBook();renderOrderPanel();renderOrders();renderDetail();}
+
+/* ============================================================ tabs / nav */
+function switchTab(tab){
+  state.tab=tab;
+  document.getElementById('app').dataset.view=tab;
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.tab===tab));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.dataset.view===tab));
+  document.getElementById('actionBar').style.display = tab==='order'?'grid':'none';
+  document.getElementById('opanel').style.display = tab==='order'?'block':'none';
+  // 報價/下單 共用報價頭，其它頁也保留方便切換
+  if(tab==='orders')renderOrders();
+  if(tab==='detail')renderDetail();
+  document.querySelector('.body').scrollTop=0;
+}
+function goBack(){
+  if(state.tab!=='order'){switchTab('order');return;}
+  toast('已是首頁（模擬）');
+}
+
+/* ============================================================ order setup */
+function pickDepthPrice(p){state.order.price=clampPrice(p);renderOrderPanel();toast('已帶入價格 '+fmt(state.order.price));}
+function setLimit(k){
+  if(k==='down')state.order.price=limitDown();
+  else if(k==='up')state.order.price=limitUp();
+  else state.order.price=STOCK.ref;
+  renderOrderPanel();
+  toast(k==='down'?'跌停價 '+fmt(limitDown()):k==='up'?'漲停價 '+fmt(limitUp()):'平盤價 '+fmt(STOCK.ref));
+}
+function bumpPrice(d){state.order.price=clampPrice(state.order.price+d*tick(state.order.price));renderOrderPanel();}
+function bumpQty(d){state.order.qty=Math.min(999,Math.max(1,state.order.qty+d));renderOrderPanel();}
+
+/* ---------- trade type sheet & notice ---------- */
+function openTypeSheet(){document.getElementById('typeScrim').classList.add('on');}
+function closeSheet(id){document.getElementById(id).classList.remove('on');}
+function closeOnScrim(e,id){if(e.target.id===id)closeSheet(id);}
+function pickType(){
+  closeSheet('typeScrim');
+  // 每次重新選擇盤中零股，依規定顯示注意事項
+  openNotice();
+}
+function openNotice(){
+  document.getElementById('noticeChk').classList.toggle('on',state.noticeAccepted);
+  document.getElementById('noticeOk').disabled=!state.noticeAccepted;
+  document.getElementById('noticeModal').classList.add('on');
+}
+function closeNotice(){document.getElementById('noticeModal').classList.remove('on');}
+function toggleChk(){
+  const c=document.getElementById('noticeChk');c.classList.toggle('on');
+  document.getElementById('noticeOk').disabled=!c.classList.contains('on');
+}
+function acceptNotice(){
+  state.noticeAccepted=true;save();closeNotice();
+  toast('已選擇「盤中零股・限價 ROD」，開始練習下單');
+}
+
+/* ============================================================ number pad */
+let pad={mode:'price',buf:'',active:false};
+function openPad(mode){
+  pad.mode=mode;pad.buf='';pad.active=true;
+  document.getElementById('numpad').classList.add('on');
+  document.getElementById('padScrim').classList.add('on');
+  document.getElementById('npQuick').style.display = mode==='price'?'grid':'none';
+  document.getElementById('padUnit').textContent = mode==='price'?'元':'股';
+  document.getElementById('padDot').textContent = mode==='price'?'.':'00';
+  document.getElementById('padDot').dataset.k = mode==='price'?'dot':'00';
+  padRender();
+}
+function closePad(){pad.active=false;document.getElementById('numpad').classList.remove('on');document.getElementById('padScrim').classList.remove('on');}
+function padCurrent(){
+  if(pad.buf!=='')return pad.buf;
+  return pad.mode==='price'?fmt(state.order.price):String(state.order.qty);
+}
+function padRender(){document.getElementById('padDisp').textContent=padCurrent();}
+function padKey(k){
+  if(k==='ok'){padCommit();return;}
+  if(k==='clear'){pad.buf='';padRender();return;}
+  if(k==='back'){pad.buf=padCurrent().slice(0,-1);padRender();return;}
+  if(k==='dot'){k=document.getElementById('padDot').dataset.k;}
+  let cur=pad.buf;
+  if(k==='dot'){if(pad.mode!=='price')return;if(cur.includes('.'))return;if(cur==='')cur='0';cur+='.';}
+  else if(k==='00'){if(pad.mode!=='qty')return;cur=(cur===''?'':cur)+'00';}
+  else{ // digit
+    if(pad.mode==='price'){const dot=cur.indexOf('.');if(dot>=0&&cur.length-dot>2)return;}
+    cur+=k;
+  }
+  if(cur.replace('.','').length>6)return;
+  pad.buf=cur;padRender();
+}
+function padStep(d){
+  if(pad.mode==='price'){let p=parseFloat(padCurrent())||state.order.price;p=clampPrice(p+d*tick(p));pad.buf=fmt(p);}
+  else{let q=parseInt(padCurrent())||state.order.qty;q=Math.min(999,Math.max(1,q+d));pad.buf=String(q);}
+  padRender();
+}
+function padQuick(k){
+  if(pad.mode!=='price')return;
+  let p = k==='down'?limitDown():k==='up'?limitUp():STOCK.ref;
+  pad.buf=fmt(p);padRender();
+}
+function padCommit(){
+  if(pad.mode==='price'){
+    let p=parseFloat(padCurrent());
+    if(isNaN(p)||p<=0){toast('請輸入有效價格');return;}
+    p=clampPrice(p);state.order.price=p;
+  }else{
+    let q=parseInt(padCurrent());
+    if(isNaN(q)||q<1){toast('請輸入至少 1 股');return;}
+    if(q>999){q=999;toast('零股單筆上限 999 股');}
+    state.order.qty=q;
+  }
+  renderOrderPanel();closePad();
+}
+
+/* ============================================================ confirm & submit */
+function confirmOrder(side){
+  if(!state.noticeAccepted){openNotice();toast('首次下單請先閱讀注意事項');return;}
+  state.order.side=side;
+  const buy=side==='buy';
+  document.getElementById('cfmHead').className='ch '+(buy?'buy':'sell');
+  document.getElementById('cfmWm').className='wm '+(buy?'buy':'sell');
+  document.getElementById('cfmWm').textContent=buy?'買':'賣';
+  document.getElementById('cfmAction').textContent='盤中零股'+(buy?'買進':'賣出');
+  document.getElementById('cfmPrice').textContent=fmt(state.order.price)+' 元';
+  document.getElementById('cfmQty').textContent=state.order.qty+' 股';
+  document.getElementById('cfmEst').textContent='預估金額 約 '+fmtInt(state.order.price*state.order.qty)+' 元（未計手續費）';
+  const ok=document.getElementById('cfmOk');ok.className='c ok '+(buy?'buy':'sell');
+  document.getElementById('confirmModal').classList.add('on');
+}
+function closeModal(id){document.getElementById(id).classList.remove('on');}
+let orderSeq=1;
+function submitOrder(){
+  closeModal('confirmModal');
+  const o={id:orderSeq++,side:state.order.side,price:state.order.price,qty:state.order.qty,
+           remain:state.order.qty,filled:0,avg:0,status:'working',t:nowStr()};
+  state.orders.push(o);save();
+  switchTab('orders');renderOrders();
+  toast('✅ 委託已送出（模擬）：'+(o.side==='buy'?'買':'賣')+' 正達 '+o.qty+' 股 @ '+fmt(o.price));
+}
+function nowStr(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');}
+
+/* ---------- cancel / modify ---------- */
+let cancelTarget=null;
+function openCancel(id){
+  cancelTarget=id;
+  if(confirm('刪除這筆委託？（模擬）\n餘量將被取消。')){doCancel(id);}
+}
+function doCancel(id){
+  const o=state.orders.find(x=>x.id===id);if(!o)return;
+  if(o.status!=='working'&&o.status!=='part'){toast('此委託已無法刪改');return;}
+  o.status='cancel';o.remain=0;save();renderOrders();toast('已刪除委託（模擬）');
+}
+
+/* ============================================================ market simulation */
+function jitterBook(){
+  // 微幅移動成交價（±1 檔，多半不動）
+  const r=Math.random();
+  if(r<0.18) state.last=clampPrice(state.last+tick(state.last));
+  else if(r<0.34) state.last=clampPrice(state.last-tick(state.last));
+  // 試撮價貼近成交價
+  state.trial=clampPrice(state.last+(Math.random()<.5?0:(Math.random()<.5?tick(state.last):-tick(state.last))));
+  // 依成交價重建五檔
+  const t=tick(state.last);const rq=()=>50+Math.floor(Math.random()*1800);
+  state.bids=[]; state.asks=[];
+  const bestBidOff = Math.random()<.6?0:1;
+  for(let i=0;i<5;i++){state.bids.push([clampPrice(state.last-(i+bestBidOff)*t),rq()]);}
+  const bestAskOff = Math.random()<.6?1:2;
+  for(let i=0;i<5;i++){state.asks.push([clampPrice(state.last+(i+bestAskOff)*t),rq()]);}
+  // 新增一筆最近成交
+  if(r<0.5){state.trades.push({t:nowStr(),p:state.last,q:5+Math.floor(Math.random()*400)});if(state.trades.length>12)state.trades.shift();}
+  renderQuoteHead();renderBook();
+  if(state.tab==='detail')renderDetail();
+}
+function matchEngine(){
+  let any=false;
+  state.orders.forEach(o=>{
+    if(o.status!=='working'&&o.status!=='part')return;
+    // 成交條件：買單價>=現價 或 賣單價<=現價 → 有機會撮合
+    const ok = o.side==='buy'? o.price>=state.last-1e-9 : o.price<=state.last+1e-9;
+    if(!ok)return;
+    if(Math.random()<0.45){ // 模擬部分成交
+      const f=Math.min(o.remain, 1+Math.floor(Math.random()*Math.max(1,Math.ceil(o.remain*0.6))));
+      const px=o.side==='buy'?Math.min(o.price,state.last):Math.max(o.price,state.last);
+      o.avg=(o.avg*o.filled+px*f)/(o.filled+f);
+      o.filled+=f;o.remain-=f;
+      o.status = o.remain<=0?'full':'part';
+      // 記錄成交、更新部位
+      state.fills.push({t:nowStr(),side:o.side,p:px,q:f});
+      if(o.side==='buy'){state.holdShares+=f;state.holdCostTotal+=px*f;}
+      else{
+        const avgCost=state.holdShares>0?state.holdCostTotal/state.holdShares:px;
+        state.holdShares=Math.max(0,state.holdShares-f);
+        state.holdCostTotal=Math.max(0,state.holdCostTotal-avgCost*f);
+      }
+      any=true;
+      toast(`🔔 撮合成交（模擬）：${o.side==='buy'?'買':'賣'} ${f} 股 @ ${fmt(px)}`);
+    }
+  });
+  if(any){save();renderOrders();renderDetail();}
+}
+
+/* ============================================================ help / reset */
+function openHelp(){document.getElementById('helpModal').classList.add('on');}
+function resetSim(){
+  if(!confirm('確定清空所有模擬委託、成交與部位？'))return;
+  state.orders=[];state.fills=[];state.holdShares=0;state.holdCostTotal=0;orderSeq=1;
+  save();renderAll();closeModal('helpModal');toast('已重設模擬');
+}
+
+/* ============================================================ boot */
+function boot(){
+  load();
+  renderAll();
+  switchTab('order');
+  if(!state.noticeAccepted){setTimeout(openNotice,400);}
+  // 重新計算 orderSeq 以免 id 重複
+  orderSeq = state.orders.reduce((m,o)=>Math.max(m,o.id),0)+1;
+  setInterval(jitterBook,2000);
+  setInterval(matchEngine,3500);
+}
+boot();
+</script>
+</body>
+</html>

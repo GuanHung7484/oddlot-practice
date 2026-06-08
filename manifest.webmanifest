@@ -1,0 +1,19 @@
+{
+  "name": "盤中零股 模擬下單練習",
+  "short_name": "零股模擬",
+  "description": "模擬元大證券盤中零股下單流程，純練習、非真實交易。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0c11",
+  "theme_color": "#000000",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230a0c11'/%3E%3Ctext x='256' y='250' font-size='150' font-weight='800' fill='%23ee3f2d' text-anchor='middle' font-family='sans-serif'%3E%E9%9B%B6%3C/text%3E%3Ctext x='256' y='400' font-size='150' font-weight='800' fill='%2313b079' text-anchor='middle' font-family='sans-serif'%3E%E8%82%A1%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

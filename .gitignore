@@ -1,0 +1,12 @@
+# 參考用的元大 App 截圖 —— 含真實帳號/庫存，不公開上傳
+*.jpg
+*.jpeg
+*.png
+
+# 本機開發 / 預覽設定
+.claude/
+
+# 系統雜檔
+Thumbs.db
+.DS_Store
+desktop.ini
