@@ -772,8 +772,17 @@ function padKey(k){
 }
 function padNumOr(fallback){var v=parseFloat(pad.buf);return isNaN(v)?fallback:v;}
 function padStep(d){
-  if(pad.mode==='price'){let p=padNumOr(state.order.price);p=clampPrice(p+d*tick(p));pad.buf=fmt(p);}
-  else{let q=Math.round(padNumOr(state.order.qty));q=Math.min(999,Math.max(1,q+d));pad.buf=String(q);}
+  if(pad.mode==='price'){
+    let p=parseFloat(pad.buf);                    // 從當前鍵盤輸入取值
+    if(isNaN(p)) p=state.order.price;             // 空白時用現行價格作為基準
+    p=p+d*tick(p);
+    if(p>0.01) pad.buf=fmt(Math.round(p*1e6)/1e6);
+  }else{
+    let q=parseInt(pad.buf,10);                   // 從當前鍵盤輸入取值
+    if(isNaN(q)) q=0;                             // 空白時當作 0（不是用舊的 state.order.qty）
+    q=Math.min(999,Math.max(0,q+d));
+    pad.buf=q===0?'':String(q);
+  }
   pad.fresh=false;padRender();
 }
 function padQuick(k){
@@ -784,14 +793,14 @@ function padQuick(k){
 function padCommit(){
   if(pad.mode==='price'){
     let p=parseFloat(pad.buf);
-    if(isNaN(p)||p<=0){toast('請輸入價格');return;}           // 空白/無效 → 提示，不關閉
-    let cp=clampPrice(p);
-    if(p>limitUp()+1e-9) toast('超過漲停，已改為漲停價 '+fmt(cp)+' 元');
-    else if(p<limitDown()-1e-9) toast('低於跌停，已改為跌停價 '+fmt(cp)+' 元');
-    else if(Math.abs(cp-p)>1e-9) toast('已對齊跳動單位，'+fmt(cp)+' 元');
+    if(isNaN(p)||p<=0){toast('請輸入價格');return;}
+    let cp=clampPrice(p);                         // 自動夾到漲跌停內
+    if(p>limitUp()+1e-9) toast('超過漲停，已改為 '+fmt(cp)+' 元');
+    else if(p<limitDown()-1e-9) toast('低於跌停，已改為 '+fmt(cp)+' 元');
+    else if(Math.abs(cp-p)>1e-9) toast('已對齊跳動單位 '+fmt(cp)+' 元');
     state.order.price=cp;
   }else{
-    let q=parseInt(pad.buf,10);
+    let q=pad.buf===''?0:parseInt(pad.buf,10);
     if(isNaN(q)||q<1){toast('請輸入股數（至少 1 股）');return;}
     if(q>999){q=999;toast('零股單筆上限 999 股');}
     state.order.qty=q;
