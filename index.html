@@ -298,6 +298,62 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .m-field .val{flex:1;text-align:center;font-size:22px;font-weight:800;color:#fff;}
 .m-amt{text-align:right;font-size:11px;color:var(--muted);margin:3px 4px 8px 0;}
 .m-unit{text-align:right;font-size:11px;color:var(--muted);margin:3px 4px 2px 0;}
+
+/* ===== 整股主畫面其餘分頁（委託/明細/庫存/帳務，示意畫面）===== */
+.mv{flex:1 1 auto;min-height:0;display:none;flex-direction:column;overflow:hidden;}
+.mv.on{display:flex;}
+.m-filter{flex:0 0 auto;display:flex;gap:7px;align-items:center;padding:9px 8px;background:var(--panel);border-bottom:1px solid var(--line);}
+.m-filter .fbox{flex:1.3;height:38px;border:1px solid var(--line2);border-radius:8px;background:#0d1016;}
+.m-filter .fsel{flex:1;height:38px;border:1px solid var(--line2);border-radius:8px;background:#0d1016;color:#d7dce4;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;}
+.m-filter .fsel .cv{color:var(--muted);font-size:11px;}
+.m-filter .frefresh{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:19px;color:#cfd5de;}
+.m-thead{flex:0 0 auto;display:grid;background:#0d1016;color:#aeb6c2;font-size:14px;font-weight:700;padding:10px 10px;border-bottom:1px solid var(--line);}
+.m-thead.q4{grid-template-columns:64px 1.2fr 1.2fr 0.9fr;}
+.m-thead.q4>div:nth-child(3){text-align:center;}
+.m-thead.q4>div:nth-child(4){text-align:right;}
+.m-thead.q3{grid-template-columns:1fr 1fr 1fr;text-align:center;}
+.m-thead.hold{grid-template-columns:1.1fr 1fr 1fr 0.9fr;}
+.m-thead.hold>div{text-align:center;line-height:1.3;}
+.m-thead.hold>div:first-child{text-align:left;}
+.m-thead.hold>div:last-child{text-align:right;}
+.m-thead.det{grid-template-columns:0.9fr 0.9fr 1.1fr 1.2fr;}
+.m-thead.det>div{text-align:center;}
+.m-thead.det>div:first-child{text-align:left;}
+.m-thead.det>div:last-child{text-align:right;}
+.m-vbody{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--bg);}
+.m-empty{padding:38px 16px;text-align:center;color:var(--muted2);font-size:13px;line-height:1.95;}
+.m-note{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--panel);border-top:1px solid var(--line);color:#cfd5de;font-size:14px;font-weight:700;}
+/* bottom app nav */
+.m-tabbar{flex:0 0 auto;display:none;grid-template-columns:repeat(6,1fr);background:#000;border-top:1px solid #1a1f29;padding-bottom:env(safe-area-inset-bottom);}
+.m-tabbar.on{display:grid;}
+.m-tabbar .nv{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 0 6px;font-size:11.5px;color:#aeb6c2;}
+.m-tabbar .nv .ic{font-size:17px;line-height:1;}
+.m-tabbar .nv.on{color:var(--tab);}
+/* 庫存 donut */
+.m-holdtop{flex:0 0 auto;display:flex;align-items:center;gap:18px;padding:14px 16px;background:var(--bg);}
+.donut{width:116px;height:116px;border-radius:50%;flex:0 0 auto;background:conic-gradient(var(--down) 0 12%, var(--flat) 12% 100%);display:flex;align-items:center;justify-content:center;position:relative;}
+.donut::before{content:"";position:absolute;width:72px;height:72px;border-radius:50%;background:var(--bg);}
+.donut .ctr{position:relative;font-size:14px;color:#cfd5de;font-weight:700;}
+.hold-leg{font-size:14px;line-height:1.85;}
+.hold-leg .t{font-size:17px;font-weight:800;color:#e9ecf1;margin-bottom:4px;}
+.hold-leg .lg{display:flex;align-items:center;gap:7px;color:#cfd5de;}
+.hold-leg .bar{width:5px;height:15px;border-radius:2px;display:inline-block;}
+.hold-leg .cur{color:var(--muted);font-size:12px;margin-top:6px;}
+.m-chips{flex:0 0 auto;display:flex;gap:8px;padding:2px 12px 12px;overflow-x:auto;background:var(--bg);}
+.m-chips .chip{flex:0 0 auto;height:40px;padding:0 12px;border:1px solid var(--line2);border-radius:9px;background:#0d1016;color:#d7dce4;font-size:14px;font-weight:700;display:flex;align-items:center;}
+.m-caret{flex:0 0 auto;text-align:center;color:var(--muted2);font-size:13px;padding:2px 0;background:var(--bg);}
+/* 明細 summary */
+.m-sum2{flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px 4px;background:var(--panel);font-size:14px;color:#aeb6c2;}
+.m-sum2 b{color:#e9ecf1;}
+.m-whiteband{flex:0 0 auto;height:34px;background:#fff;border-bottom:1px solid var(--line);}
+/* 帳務 grid */
+.m-accscroll{flex:1 1 auto;min-height:0;overflow-y:auto;background:var(--bg);}
+.m-accsec{border-bottom:1px solid var(--line);}
+.m-accsec .hd{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font-size:16px;font-weight:800;color:var(--gold);}
+.m-accgrid{display:grid;grid-template-columns:repeat(4,1fr);padding:2px 4px 16px;}
+.m-accitem{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 4px;text-align:center;}
+.m-accitem .ic{width:44px;height:44px;border-radius:11px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:20px;color:#cfd5de;}
+.m-accitem .lb{font-size:12px;color:#d7dce4;line-height:1.3;}
 </style>
 </head>
 <body>
@@ -309,13 +365,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   <div id="mainScreen">
     <div class="m-tabs no-sel">
       <button class="mback" onclick="toast('這是首頁（模擬）')">‹</button>
-      <button class="mt on">下單</button>
-      <button class="mt" onclick="enterOddlotFlow()">委託</button>
-      <button class="mt" onclick="enterOddlotFlow()">明細</button>
-      <button class="mt" onclick="toast('庫存：模擬練習未提供')">庫存</button>
-      <button class="mt" onclick="toast('帳務：模擬練習未提供')">帳務</button>
+      <button class="mt on" data-mtab="order" onclick="switchMainTab('order')">下單</button>
+      <button class="mt" data-mtab="orders" onclick="switchMainTab('orders')">委託</button>
+      <button class="mt" data-mtab="detail" onclick="switchMainTab('detail')">明細</button>
+      <button class="mt" data-mtab="hold" onclick="switchMainTab('hold')">庫存</button>
+      <button class="mt" data-mtab="account" onclick="switchMainTab('account')">帳務</button>
       <button class="msearch" onclick="toast('本練習以「正達 3149」示範')">⌕</button>
     </div>
+
+    <!-- 下單 view (圖一) -->
+    <div id="mv-order" class="mv on">
     <div class="m-acct no-sel">
       <button class="sel" onclick="toast('台股（模擬）')"><span>台股</span><span class="cv">▼</span></button>
       <button class="sel" onclick="toast('模擬帳戶：練習分公司 8888-0000000')"><span>8888-0000000</span><span class="cv">▼</span></button>
@@ -379,6 +438,103 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
     <div class="actionbar no-sel">
       <button class="big buy" onclick="enterOddlotFlow()">買進</button>
       <button class="big sell" onclick="enterOddlotFlow()">賣出</button>
+    </div>
+    </div><!-- /mv-order -->
+
+    <!-- 委託 view (圖二) -->
+    <div id="mv-orders" class="mv">
+      <div class="m-filter no-sel">
+        <button class="fbox" onclick="toast('模擬帳戶：練習分公司 8888-0000000')"></button>
+        <button class="fsel" onclick="toast('全部委託（示意）')">全部委託 <span class="cv">▼</span></button>
+        <button class="fsel" onclick="toast('全部（示意）')">全部 <span class="cv">▼</span></button>
+        <button class="frefresh" onclick="toast('已更新（示意）')">⟳</button>
+      </div>
+      <div class="m-thead q4"><div>刪/改</div><div>名稱</div><div>委價/成均</div><div>數量</div></div>
+      <div class="m-vbody"><div class="m-empty">（整股委託示意畫面）目前無整股委託<br>零股委託請從下方「整股ROD → 盤中零股」進入後，在零股的「委託」頁查看</div></div>
+    </div>
+
+    <!-- 明細 view (圖四) -->
+    <div id="mv-detail" class="mv">
+      <div class="m-filter no-sel">
+        <button class="fbox" onclick="toast('模擬帳戶')"></button>
+        <button class="fsel" onclick="toast('今日（示意）')">今日 <span class="cv">▼</span></button>
+        <button class="fsel" onclick="toast('全部（示意）')">全部 <span class="cv">▼</span></button>
+        <button class="frefresh" onclick="toast('已更新（示意）')">⟳</button>
+      </div>
+      <div class="m-sum2"><div>總應收付：<b>—</b></div><div>總損益：<b>—</b></div></div>
+      <div class="m-thead q3"><div>總價金</div><div>總手續費</div><div>總交易稅</div></div>
+      <div class="m-whiteband"></div>
+      <div class="m-caret">︿</div>
+      <div class="m-thead det"><div>日期</div><div>名稱</div><div>價格/股數</div><div>應收付/損益</div></div>
+      <div class="m-vbody"><div class="m-empty">（整股明細示意畫面）今日無整股成交明細</div></div>
+      <div class="m-note"><span>＊注意事項＊</span><span>︿</span></div>
+    </div>
+
+    <!-- 庫存 view (圖三) -->
+    <div id="mv-hold" class="mv">
+      <div class="m-filter no-sel">
+        <button class="fbox" onclick="toast('模擬帳戶')"></button>
+        <button class="fsel" onclick="toast('全部（示意）')">全部 <span class="cv">▼</span></button>
+        <button class="frefresh" onclick="toast('已更新（示意）')">⟳</button>
+      </div>
+      <div class="m-holdtop">
+        <div class="donut"><span class="ctr">股票報酬</span></div>
+        <div class="hold-leg">
+          <div class="t">股票市值</div>
+          <div class="lg"><span class="bar" style="background:var(--flat)"></span>總成本</div>
+          <div class="lg"><span class="bar" style="background:var(--up)"></span>報酬</div>
+          <div class="cur">幣別：新台幣</div>
+        </div>
+      </div>
+      <div class="m-chips no-sel">
+        <button class="chip" onclick="toast('當沖試算（示意）')">當沖試算</button>
+        <button class="chip" onclick="toast('維持率（示意）')">維持率</button>
+        <button class="chip" onclick="toast('條件單（示意）')">條件單</button>
+        <button class="chip" onclick="toast('庫存借款（示意）')">庫存借款</button>
+        <button class="chip" onclick="toast('靈活持股（示意）')">靈活持股</button>
+      </div>
+      <div class="m-caret">︿</div>
+      <div class="m-thead hold"><div>名稱</div><div>市價<br>均價</div><div>股數<br>可下單數</div><div>損益</div></div>
+      <div class="m-vbody"><div class="m-empty">（整股庫存示意畫面）目前無整股庫存</div></div>
+      <div class="m-note"><span>＊注意事項＊</span><span>︿</span></div>
+    </div>
+
+    <!-- 帳務 view (圖五) -->
+    <div id="mv-account" class="mv">
+      <div class="m-accscroll no-sel">
+        <div class="m-accsec">
+          <div class="hd">證券 <span style="color:#cfd5de">︿</span></div>
+          <div class="m-accgrid">
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">📄</span><span class="lb">整戶額度/<br>資券餘額</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">％</span><span class="lb">維持率專區</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🏦</span><span class="lb">銀行餘額/<br>資金管理</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🧾</span><span class="lb">交割款項</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">💰</span><span class="lb">借貸未實損</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">💳</span><span class="lb">股票借貸</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🔄</span><span class="lb">股票出借/<br>借入</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">↔️</span><span class="lb">雙向借券</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🗂️</span><span class="lb">集保作業</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🤲</span><span class="lb">預繳圈存</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">💱</span><span class="lb">券差出借</span></button>
+            <button class="m-accitem" onclick="toast('帳務為示意畫面，無法操作')"><span class="ic">🎁</span><span class="lb">除權息總覽</span></button>
+          </div>
+        </div>
+        <div class="m-accsec"><div class="hd">複委託 <span style="color:#cfd5de">▾</span></div></div>
+        <div class="m-accsec"><div class="hd">期貨 <span style="color:#cfd5de">▾</span></div></div>
+        <div class="m-accsec"><div class="hd">基金 <span style="color:#cfd5de">▾</span></div></div>
+        <div class="m-accsec"><div class="hd">店頭商品 <span style="color:#cfd5de">▾</span></div></div>
+        <div class="m-accsec"><div class="hd">更多 <span style="color:#cfd5de">▾</span></div></div>
+      </div>
+    </div>
+
+    <!-- 底部 App 導覽列（委託/明細/庫存/帳務 時顯示）-->
+    <div class="m-tabbar no-sel" id="mTabbar">
+      <button class="nv" onclick="toast('首頁（示意）')"><span class="ic">🏠</span></button>
+      <button class="nv" onclick="toast('專家（示意）')"><span class="ic">👤</span>專家</button>
+      <button class="nv" onclick="toast('自選（示意）')"><span class="ic">☆</span>自選</button>
+      <button class="nv on" onclick="toast('交易（目前）')"><span class="ic">⇄</span>交易</button>
+      <button class="nv" onclick="toast('行情（示意）')"><span class="ic">📈</span>行情</button>
+      <button class="nv" onclick="toast('e櫃台（示意）')"><span class="ic">🏢</span>e櫃台</button>
     </div>
   </div>
 
@@ -852,7 +1008,19 @@ function exitOddlot(){
   screen='main';
   document.getElementById('oddlotScreen').style.display='none';
   document.getElementById('mainScreen').style.display='flex';
+  switchMainTab('order');
   renderMain();
+}
+/* ---------- 整股主畫面：下單/委託/明細/庫存/帳務 分頁切換 ---------- */
+let mainTab='order';
+function switchMainTab(tab){
+  mainTab=tab;
+  document.querySelectorAll('#mainScreen .m-tabs .mt').forEach(function(b){b.classList.toggle('on', b.dataset.mtab===tab);});
+  ['order','orders','detail','hold','account'].forEach(function(t){
+    var el=document.getElementById('mv-'+t);
+    if(el) el.classList.toggle('on', t===tab);
+  });
+  document.getElementById('mTabbar').classList.toggle('on', tab!=='order');
 }
 function enterOddlotFlow(force){
   if(screen!=='oddlot') enterOddlot();
